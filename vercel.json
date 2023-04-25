@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/main.py"
+    }
+  ],
+  "builds": [
+    {
+      "src": "/main.py",
+      "use": "@vercel/python"
+    }
+  ],
+  "env": {
+    "DATABASE_URL": "sqlite:///./events.db"
+  }
+}
