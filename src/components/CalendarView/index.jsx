@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import dayjs from "dayjs";
 import Modal from "../Modal";
 import EventForm from "../EventForm";
@@ -8,6 +8,16 @@ const CalendarView = () => {
   const [events, setEvents] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
+
+  const fetchEvents = async () => {
+    const response = await fetch("http://localhost:8000/events");
+    const data = await response.json();
+    setEvents(data);
+  };
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
   const handlePrevDay = () =>
     setDate(dayjs(date).subtract(1, "day").format("YYYY-MM-DD"));
@@ -25,25 +35,61 @@ const CalendarView = () => {
     setShowModal(true);
   };
 
-  const handleDeleteEvent = (event) => {
-    setEvents((prevEvents) => prevEvents.filter((e) => e.id !== event.id));
-  };
+  // const handleDeleteEvent = (event) => {
+  //   setEvents((prevEvents) => prevEvents.filter((e) => e.id !== event.id));
+  // };
+  const handleDeleteEvent = async (event) => {
+    const options = { method: "DELETE" };
+    const response = await fetch(
+      `http://localhost:8000/events/${event.id}`,
+      options
+    );
 
-  const handleSaveEvent = (event) => {
+    if (response.ok) {
+      setEvents((prevEvents) => prevEvents.filter((e) => e.id !== event.id));
+    }
+  };
+  // const handleSaveEvent = (event) => {
+  //   if (selectedEvent) {
+  //     setEvents((prevEvents) =>
+  //       prevEvents.map((e) =>
+  //         e.id === selectedEvent.id ? { ...e, ...event } : e
+  //       )
+  //     );
+  //   } else {
+  //     setEvents((prevEvents) => [
+  //       ...prevEvents,
+  //       {
+  //         id: Math.random().toString(36).substring(2),
+  //         ...event,
+  //       },
+  //     ]);
+  //   }
+
+  //   setShowModal(false);
+  // };
+  const handleSaveEvent = async (event) => {
+    const options = {
+      method: selectedEvent ? "PUT" : "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(event),
+    };
+
+    const url = selectedEvent
+      ? `http://localhost:8000/events/${selectedEvent.id}`
+      : "http://localhost:8000/events";
+
+    const response = await fetch(url, options);
+    const data = await response.json();
+
     if (selectedEvent) {
       setEvents((prevEvents) =>
         prevEvents.map((e) =>
-          e.id === selectedEvent.id ? { ...e, ...event } : e
+          e.id === selectedEvent.id ? { ...e, ...data } : e
         )
       );
     } else {
-      setEvents((prevEvents) => [
-        ...prevEvents,
-        {
-          id: Math.random().toString(36).substring(2),
-          ...event,
-        },
-      ]);
+      setEvents((prevEvents) => [...prevEvents, data]);
     }
 
     setShowModal(false);
