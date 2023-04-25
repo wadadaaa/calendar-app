@@ -13,7 +13,8 @@ app = FastAPI()
 db = []
 
 # CORS settings
-origins = ["http://localhost", "http://localhost:3000", "http://localhost:5173"]
+origins = ["https://calendar-app-inky.vercel.app"]
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
