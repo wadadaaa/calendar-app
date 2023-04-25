@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import dayjs from "dayjs";
 import Modal from "../Modal";
 import EventForm from "../EventForm";
@@ -8,18 +8,6 @@ const CalendarView = () => {
   const [events, setEvents] = useState([]);
   const [showModal, setShowModal] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState(null);
-
-  const API_URL = "https://calendar-app-inky.vercel.app";
-
-  const fetchEvents = async () => {
-    const response = await fetch(`${API_URL}/events`);
-    const data = await response.json();
-    setEvents(data);
-  };
-
-  useEffect(() => {
-    fetchEvents();
-  }, []);
 
   const handlePrevDay = () =>
     setDate(dayjs(date).subtract(1, "day").format("YYYY-MM-DD"));
@@ -37,36 +25,25 @@ const CalendarView = () => {
     setShowModal(true);
   };
 
-  const handleDeleteEvent = async (event) => {
-    const options = { method: "DELETE" };
-    const response = await fetch(`${API_URL}/events/${event.id}`, options);
-
-    if (response.ok) {
-      setEvents((prevEvents) => prevEvents.filter((e) => e.id !== event.id));
-    }
+  const handleDeleteEvent = (event) => {
+    setEvents((prevEvents) => prevEvents.filter((e) => e.id !== event.id));
   };
-  const handleSaveEvent = async (event) => {
-    const options = {
-      method: selectedEvent ? "PUT" : "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(event),
-    };
 
-    const url = selectedEvent
-      ? `${API_URL}/events/${selectedEvent.id}`
-      : `${API_URL}/events`;
-
-    const response = await fetch(url, options);
-    const data = await response.json();
-
+  const handleSaveEvent = (event) => {
     if (selectedEvent) {
       setEvents((prevEvents) =>
         prevEvents.map((e) =>
-          e.id === selectedEvent.id ? { ...e, ...data } : e
+          e.id === selectedEvent.id ? { ...e, ...event } : e
         )
       );
     } else {
-      setEvents((prevEvents) => [...prevEvents, data]);
+      setEvents((prevEvents) => [
+        ...prevEvents,
+        {
+          id: Math.random().toString(36).substring(2),
+          ...event,
+        },
+      ]);
     }
 
     setShowModal(false);
